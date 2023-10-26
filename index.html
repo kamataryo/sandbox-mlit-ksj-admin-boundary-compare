@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>国土数値情報年度間比較</title>
+  <style>
+    html, body, #map {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    label[for="ksj2021"]::after {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+      content: '';
+      border-radius: 3px;
+      border-style: solid;
+      border-color: blue;
+      border-width: 2px;
+      margin-left: 10px;
+    }
+    label[for="ksj2023"]::after {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+      content: '';
+      border-radius: 3px;
+      border-style: solid;
+      border-color: red;
+      border-width: 2px;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map" data-hash="on"></div>
+  <script src="https://cdn.geolonia.com/v1/embed?geolonia-api-key=YOUR-API-KEY"></script>
+  <script type="module">
+    class LayerToggleControl {
+      constructor() {
+        const container = document.createElement('div')
+        container.classList.add('maplibregl-ctrl')
+        container.classList.add('maplibregl-ctrl-group')
+        container.style.padding = '10px'
+        container.style.fontSize = '20px'
+        container.style.lineHeight = '1.5'
+        const ksj2021checkbox = document.createElement('input')
+        const ksj2021label = document.createElement('label')
+        ksj2021checkbox.id = 'ksj2021'
+        ksj2021checkbox.type = 'checkbox'
+        ksj2021checkbox.checked = true
+        ksj2021label.htmlFor = 'ksj2021'
+        ksj2021label.innerText = '2021年度'
+        const ksj2023checkbox = document.createElement('input')
+        const ksj2023label = document.createElement('label')
+        ksj2023checkbox.id = 'ksj2023'
+        ksj2023checkbox.type = 'checkbox'
+        ksj2023checkbox.checked = true
+        ksj2023label.htmlFor = 'ksj2023'
+        ksj2023label.innerText = '2023年度'
+        container.appendChild(ksj2021checkbox)
+        container.appendChild(ksj2021label)
+        container.appendChild(document.createElement('br'))
+        container.appendChild(ksj2023checkbox)
+        container.appendChild(ksj2023label)
+        this._container = container
+        this._ksj2021checkbox = ksj2021checkbox
+        this._ksj2023checkbox = ksj2023checkbox
+      }
+      onAdd(map) {
+        this._ksj2021checkbox.addEventListener('change', e => {
+          const checked = e.target.checked
+          map.setLayoutProperty('ksj2021-line', 'visibility', checked ? 'visible' : 'none')
+        })
+        this._ksj2023checkbox.addEventListener('change', e => {
+          const checked = e.target.checked
+          map.setLayoutProperty('ksj2023-line', 'visibility', checked ? 'visible' : 'none')
+        })
+        return this._container
+      }
+      onRemove() {}
+    }
+
+    const map = new window.geolonia.Map({
+      container: '#map',
+      maxZoom: 13.9,
+      style: {
+        version: 8,
+        sources: {
+          'ksj2021': {
+            type: 'vector',
+            url: 'https://tileserver.geolonia.com/jp-local-governments/tiles.json',
+          },
+          'ksj2023': {
+            type: 'vector',
+            url: 'https://tileserver.geolonia.com/jp-local-governments_20230101/tiles.json',
+          }
+        },
+        layers: [
+          {
+            id: 'ksj2021-line',
+            type: 'line',
+            source: 'ksj2021',
+            'source-layer': 'jp-local-governments',
+            paint: {
+              'line-color': 'blue',
+              'line-width': 1.4
+            }
+          },
+          {
+            id: 'ksj2023-line',
+            type: 'line',
+            source: 'ksj2023',
+            'source-layer': 'jp-local-governments',
+            paint: {
+              'line-color': 'red',
+              'line-width': 1.4
+            }
+          }
+        ]
+      },
+    })
+    await map.once('load')
+    map.addControl(new LayerToggleControl(), 'top-left')
+  </script>
+</body>
+</html>
